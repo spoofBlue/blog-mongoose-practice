@@ -13,5 +13,11 @@
     "\"practice\""
   ],
   "author": "Cory",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.3",
+    "mongoose": "^5.1.1",
+    "morgan": "^1.9.0",
+    "uuid": "^3.2.1"
+  }
 }
