@@ -26,7 +26,9 @@ let server;
 function runServer(databaseUrl, port = PORT) {
     return new Promise((resolve, reject) => {
         mongoose.connect(databaseUrl, err => {
+            console.log(databaseUrl);
             if (err) {
+                console.log("error in runServer, failed to connect to mongoose.");
                 return reject(err);
             }
             server = app.listen(port, () => {
@@ -35,6 +37,7 @@ function runServer(databaseUrl, port = PORT) {
             })
             .on('error', err => {
                 mongoose.disconnect();
+                console.log("error in runServer, failed to listen at server.");
                 reject(err);
             });
         });
