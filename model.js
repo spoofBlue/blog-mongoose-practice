@@ -5,7 +5,7 @@ const mongoose = require(`mongoose`);
 const BlogPostSchema = mongoose.Schema({
         "title": {type: String, required : true},
         "content": {type: String},
-        "author": {firstName : {type: String}, lastName : {type: String}}
+        "author": {firstName : {type: String}, lastName : {type: String}} ,
         "created": {type: Date, default: Date.now}
 });
 
