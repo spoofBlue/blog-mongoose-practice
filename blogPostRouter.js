@@ -73,7 +73,6 @@ router.post('/', (req, res) => {
     */
     const requiredFields = [`title`, `content`, `author`];
     requiredFields.forEach(field => {
-        console.log(req.body);
         if (!(field in req.body)) {
             const message = `The field ${field} is missing from the request.`;
             console.error(message);
@@ -82,7 +81,6 @@ router.post('/', (req, res) => {
         if (field === `author`) {
             const authorFields = [`firstName`, `lastName`];
             authorFields.forEach(authField => {
-                console.log(req.body.author);
                 if (!(authField in req.body.author)) {
                     const message = `The field author.${authField} is missing from the request.`;
                     console.error(message);
@@ -95,8 +93,7 @@ router.post('/', (req, res) => {
         .create({
             title : req.body.title ,
             content : req.body.content ,
-            "author[firstName]" : req.body.author.firstName ,
-            "author[lastName]" : req.body.author.lastName
+            author : req.body.author
         })
         .then(blogpost => res.status(201).json(blogpost.serialize()))
         .catch(err => {
@@ -131,11 +128,6 @@ router.put(`/:id`, (req, res) => {
 });
 
 router.delete(`/:id`, (req, res) => {
-    if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
-        const msg = `${req.params.id} and ${req.body.id} not the same`;
-        return res.status(400).json({message : msg});
-    }
-
     BlogPosts
     .findByIdAndRemove(req.params.id)
     .then(blogposts => res.status(204).end())
