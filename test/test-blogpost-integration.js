@@ -113,7 +113,51 @@ describe(`Blog Post Integration API Test`, function() {
                     expect(resBlogPost.author).to.contain(seedPost.author.firstName);
                     expect(resBlogPost.author).to.contain(seedPost.author.lastName);
                     expect(resBlogPost.id).to.equal(seedPost.id);
+                });
+        });
+
+        it(`should get a specific blog post using an id`, function() {
+            let gettingPost;
+
+            return BlogPosts.findOne()
+                .then(function(resPost) {
+                    gettingPost = resPost;
+                    return chai.request(app).get(`/blog-posts/${gettingPost.id}`);
                 })
+                .then(function(res) {
+                    expect(res.body.title).to.equal(gettingPost.title);
+                    expect(res.body.contnet).to.equal(gettingPost.contnet);
+                    expect(res.body.id).to.equal(gettingPost.id);
+                    expect(res.body.author).to.contain(gettingPost.author.firstName);
+                    expect(res.body.author).to.contain(gettingPost.author.lastName);
+
+                    return BlogPosts.findById(res.body.id)
+                })
+                .then(function(seedPost) {
+                    expect(gettingPost.title).to.equal(seedPost.title);
+                    expect(gettingPost.content).to.equal(seedPost.content);
+                    expect(gettingPost.id).to.equal(seedPost.id);
+                    expect(gettingPost.author.firstName).to.equal(seedPost.author.firstName);
+                    expect(gettingPost.author.lastName).to.equal(seedPost.author.lastName);
+                });
+        });
+
+        it(`should fail to make a get request for a non-existant blog post`, function() {
+            let notBlogPostID = `1`;
+
+            return chai.request(app).get(`/blog-posts/${notBlogPostID}`)
+                .then(function(res) {
+                    expect(res).to.have.status(500);
+                    expect(res.body.message).to.equal(`Internal Server Error`); // Too specific?
+                    return BlogPosts.findById(notBlogPostID);
+                })
+                .then(function(res) {
+                    console.log(`test should never reach this point 2`);
+                    expect(res.body).to.equal(`Tester, this function should not reach me!`);
+                })
+                .catch(function(error) {
+                    expect(error.name).to.equal(`CastError`);
+                });
         });
     });
 
@@ -147,8 +191,25 @@ describe(`Blog Post Integration API Test`, function() {
                     expect(res.body.author).to.contain(seedPost.author.firstName);
                     expect(res.body.author).to.contain(seedPost.author.lastName);
                     expect(res.body.id).to.equal(seedPost.id);
-                })
+                });
         });
+
+        it(`should fail to make a post request when required fields aren't in request`, function() {
+            const badPost = {
+                author : "George Clooney",
+                age : "27"
+            }
+
+            return chai.request(app)
+                .post(`/blog-posts`)
+                .send(badPost)
+                .then(function(res) {
+                    expect(res).to.have.status(400);
+                })
+                .catch(function(error) {
+                    expect(error).to.have.status(400);
+                });
+        })
     });
 
     describe(`PUT requests`, function() {
@@ -178,6 +239,32 @@ describe(`Blog Post Integration API Test`, function() {
                     
                 });
         });
+
+        it(`should fail to make a put request due to an invalid key in request`, function() {
+            const notBlogPostID = `1`;
+            const updatingPost = {
+                "title": `OMG we were wrong!!`,
+                "content": `Wait until you hear about the 12 things we've changed!`,
+            }
+
+            return BlogPosts.findOne()
+                .then(function(resPost) {
+                    updatingPost.id = resPost.id;
+                    return chai.request(app).put(`/blog-posts/${notBlogPostID}`)
+                    .send(updatingPost)
+                    .then(function(res) {
+                        expect(res).to.have.status(400);
+                        return BlogPosts.findById(notBlogPostID)
+                    })     
+                    .then(function(res) {
+                        expect(res.body).to.equal(`Tester, this function should never reach here.`);
+                    })
+                    .catch(function(error) {
+                        console.log(error.body);
+                        expect(error.name).to.equal(`CastError`);
+                    });
+                });
+        })
     });
 
     describe(`DELETE requests`, function() {
@@ -188,18 +275,15 @@ describe(`Blog Post Integration API Test`, function() {
             return BlogPosts.findOne()
                 .then(function(resPost) {
                     deletingPost = resPost;
-                    console.log(deletingPost);
                     return chai.request(app).delete(`/blog-posts/${deletingPost.id}`);
                 })
                 .then(function(res) {
-                    console.log(res.body);
                     expect(res).to.have.status(204);
                     return BlogPosts.findById(deletingPost.id)
                 })
                 .then(function(seedPost) {
-                    console.log(seedPost);
                     expect(seedPost).to.be.null;
-                })
+                });
             
         });
     });
