@@ -260,7 +260,7 @@ describe(`Blog Post Integration API Test`, function() {
                         expect(res.body).to.equal(`Tester, this function should never reach here.`);
                     })
                     .catch(function(error) {
-                        console.log(error.body);
+                        console.log(error.body);  
                         expect(error.name).to.equal(`CastError`);
                     });
                 });
